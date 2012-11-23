@@ -1,0 +1,83 @@
+<!doctype html>
+  <script src="domo.js"></script>
+  <script src="domo_on_routes.js"></script>
+  <script>
+  
+    oscarsSentence = 'Oscar Said:, Be,yourself,everyone,else,is,taken,!!!'.split(',')
+    oscarSaid = function() { return H2( oscarsSentence.shift() || 'Oscar is done!' ); }
+    hash = function () { return location.hash }
+    hashChange = function ( routeing ) { 
+      window.addEventListener('hashchange',function(){ routeing () }, false )
+    }
+    
+    HTML({ lang: 'en' }
+    ,
+      HEAD(
+        TITLE( 'domo on routes' )
+        ,
+        STYLE( { type: 'text/css' }
+        ,  
+          STYLE.on( 'body', { textAlign: "center", fontSize: 24 } )
+          ,
+          STYLE.on( 'h1', { backgroundColor: 'yellow' } )
+          ,
+          STYLE.on( 'h2', { backgroundColor: 'grey' } )
+        )//STYLE
+      )//HEAD
+      ,
+      BODY(
+        A( { href: '#!/yellow' }, 'Yellow' )
+        ,
+        ' | '
+        ,
+        A({ href: '#!/blue' }, 'Blue' )
+        ,
+        ' | '
+        ,
+        A({ href: '#!/pink' }, 'Pink' )
+        ,
+        ROUTE( { url: hash, routing: hashChange }
+        ,
+          /yellow/
+          , 
+            oscarSaid
+            ,
+            H1( 'Yellow' )
+            ,
+          /blue/
+          ,
+            oscarSaid
+            ,
+            H1( 'Blue' )
+            ,
+            A( { href: '#!/blue/light' }, 'Light Blue' )
+            ,
+            ' | '
+            ,
+            A({ href: '#!/blue/dark' }, 'Dark Blue' )
+            ,
+            ROUTE( { url: hash, routing: hashChange }
+            ,
+              /light/
+              ,
+              P( 'Light' )
+              ,
+              /dark/
+              ,
+              P( 'Dark' )
+            )
+            ,
+          /pink/
+          ,
+          oscarSaid
+          ,
+          H1( 'Pink' )
+        )//ROUTE
+      )//BODY 
+    )//HTML
+   
+
+  </script>
+  <html>
+  <body></body>
+</html>
