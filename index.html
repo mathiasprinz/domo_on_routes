@@ -1,13 +1,15 @@
 <!doctype html>
   <script src="domo.js"></script>
   <script src="domo_on_routes.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
   <script>
   
     oscarsSentence = 'Oscar Said:, Be,yourself,everyone,else,is,taken,!!!'.split(',')
     oscarSaid = function() { return H2( oscarsSentence.shift() || 'Oscar is done!' ); }
     hash = function () { return location.hash }
     hashChange = function ( routeing ) { 
-      window.addEventListener('hashchange',function(){ routeing () }, false )
+      $(window).on('hashchange',function(){ routeing() })
+      //window.addEventListener('hashchange',function(){ routeing() }, false )
     }
     
     HTML({ lang: 'en' }
@@ -19,8 +21,23 @@
         ,  
           STYLE.on( 'body', { textAlign: "center", fontSize: 24 } )
           ,
-          STYLE.on( 'h1', { backgroundColor: 'yellow' } )
+          ROUTE( { url: hash, routing: hashChange }
           ,
+            /yellow/
+            ,
+            STYLE.on( 'h1', { backgroundColor: 'yellow' } )
+            ,
+            /blue/
+            ,
+            STYLE.on( 'h1', { backgroundColor: 'blue' } )
+            ,
+            /pink/
+            ,
+            STYLE.on( 'h1', { backgroundColor: 'pink' } )
+            
+        )
+          ,
+          
           STYLE.on( 'h2', { backgroundColor: 'grey' } )
         )//STYLE
       )//HEAD
@@ -40,14 +57,14 @@
         ,
           /yellow/
           , 
-            oscarSaid
-            ,
-            H1( 'Yellow' )
+            //oscarSaid
+            //,
+            H1( {id: 'yellow'},'Yellow' )
             ,
           /blue/
           ,
-            oscarSaid
-            ,
+            //oscarSaid
+            //,
             H1( 'Blue' )
             ,
             A( { href: '#!/blue/light' }, 'Light Blue' )
@@ -55,6 +72,7 @@
             ' | '
             ,
             A({ href: '#!/blue/dark' }, 'Dark Blue' )
+            
             ,
             ROUTE( { url: hash, routing: hashChange }
             ,
@@ -68,14 +86,13 @@
             )
             ,
           /pink/
-          ,
-          oscarSaid
-          ,
-          H1( 'Pink' )
+            ,
+            //oscarSaid
+            //,
+            H1( 'Pink' )
         )//ROUTE
       )//BODY 
     )//HTML
-   
 
   </script>
   <html>
