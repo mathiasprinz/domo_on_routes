@@ -4,11 +4,13 @@
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
   <script>
   
-    oscarsSentence = 'Oscar Said:, Be,yourself,everyone,else,is,taken,!!!'.split(',')
+    oscarsSentence = 'Oscar Said:,Be,yourself,everyone,else,is,taken,!!!'.split(',')
     oscarSaid = function() { return H2( oscarsSentence.shift() || 'Oscar is done!' ); }
     hash = function () { return location.hash }
     hashChange = function ( routeing ) { 
-      $(window).on('hashchange',function(){ routeing() })
+      $(window).on('hashchange',function(){ 
+       routeing()
+      })
       //window.addEventListener('hashchange',function(){ routeing() }, false )
     }
     
@@ -20,8 +22,8 @@
         STYLE( { type: 'text/css' }
         ,  
           STYLE.on( 'body', { textAlign: "center", fontSize: 24 } )
-          ,
-          ROUTE( { url: hash, routing: hashChange }
+          /*,
+          ROUTE( { url: hash, routing: hashChange, nodeType: STYLE }
           ,
             /yellow/
             ,
@@ -34,9 +36,9 @@
             /pink/
             ,
             STYLE.on( 'h1', { backgroundColor: 'pink' } )
-            
-        )
+          )*/
           ,
+          
           
           STYLE.on( 'h2', { backgroundColor: 'grey' } )
         )//STYLE
@@ -57,28 +59,37 @@
         ,
           /yellow/
           , 
-            //oscarSaid
-            //,
+            oscarSaid
+            ,
             H1( {id: 'yellow'},'Yellow' )
             ,
           /blue/
           ,
-            //oscarSaid
-            //,
+            oscarSaid
+            ,
             H1( 'Blue' )
+            ,
+           
+            
+            A( { href: '#!/blue/blue' }, '2 Blue' )
+            ,
+            ' | '
             ,
             A( { href: '#!/blue/light' }, 'Light Blue' )
             ,
             ' | '
             ,
             A({ href: '#!/blue/dark' }, 'Dark Blue' )
-            
             ,
             ROUTE( { url: hash, routing: hashChange }
-            ,
+            , /*
+              /blue/
+              ,
+              P( '2 Blue' )
+              ,*/
               /light/
               ,
-              P( 'Light' )
+              P( 'light' )
               ,
               /dark/
               ,
@@ -87,9 +98,10 @@
             ,
           /pink/
             ,
-            //oscarSaid
-            //,
+            oscarSaid
+            ,
             H1( 'Pink' )
+            , 'test'
         )//ROUTE
       )//BODY 
     )//HTML

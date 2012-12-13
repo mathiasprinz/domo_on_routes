@@ -21,7 +21,7 @@ http.createServer(function( req, res ) {
           ,  
             STYLE.on( 'body', { textAlign: "center", fontSize: 24 } )
             ,
-            ROUTE( req.url
+            /*ROUTE( req.url
             ,
               /yellow/
               ,
@@ -36,7 +36,7 @@ http.createServer(function( req, res ) {
               STYLE.on( 'h1', { backgroundColor: 'pink' } )
               
           )
-            ,
+            ,*/
             
             STYLE.on( 'h2', { backgroundColor: 'grey' } )
           )//STYLE
