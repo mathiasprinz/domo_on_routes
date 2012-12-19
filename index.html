@@ -1,18 +1,37 @@
 <!doctype html>
   <script src="domo.js"></script>
   <script src="domo_on_routes.js"></script>
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.js"></script>
   <script>
   
     oscarsSentence = 'Oscar Said:,Be,yourself,everyone,else,is,taken,!!!'.split(',')
     oscarSaid = function() { return H2( oscarsSentence.shift() || 'Oscar is done!' ); }
+    
     hash = function () { return location.hash }
+    
+    showRoute = function ( route ) { 
+      
+      return DIV( H2( route , ' ( ' , Math.random() , ' )' ), P( ( route  === "123"  ? 'A' : 'B') ) );
+    }
+    
     hashChange = function ( routeing ) { 
-      $(window).on('hashchange',function(){ 
+      $( window ).on('hashchange',function(){ 
        routeing()
       })
       //window.addEventListener('hashchange',function(){ routeing() }, false )
     }
+    
+    /* if hashChange event is missing
+    hashChange = function ( routeing ) { 
+    var last = location.hash
+    setInterval( function () { 
+      if( last !== location.hash  ) { 
+        last = location.hash
+        routeing( last )
+      }
+      }, 200)
+    }*/
+    
     
     HTML({ lang: 'en' }
     ,
@@ -45,6 +64,14 @@
       )//HEAD
       ,
       BODY(
+        A( { href: '#!/123' }, 'numberA' )
+        ,
+        ' | '
+        ,
+        A( { href: '#!/321' }, 'numberB' )
+        ,
+        ' | '
+        ,
         A( { href: '#!/yellow' }, 'Yellow' )
         ,
         ' | '
@@ -57,6 +84,12 @@
         ,
         ROUTE( { url: hash, routing: hashChange }
         ,
+          /[0-9]{3}/
+          ,
+            'number: '
+            ,
+            showRoute
+            ,
           /yellow/
           , 
             oscarSaid
@@ -82,11 +115,11 @@
             A({ href: '#!/blue/dark' }, 'Dark Blue' )
             ,
             ROUTE( { url: hash, routing: hashChange }
-            , /*
-              /blue/
+            ,
+              /(.*(blue).*){2}/
               ,
-              P( '2 Blue' )
-              ,*/
+              P( 'Blue2' )
+              ,
               /light/
               ,
               P( 'light' )
@@ -101,7 +134,6 @@
             oscarSaid
             ,
             H1( 'Pink' )
-            , 'test'
         )//ROUTE
       )//BODY 
     )//HTML

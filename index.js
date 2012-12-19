@@ -4,17 +4,24 @@ var ROUTE = require('./domo_on_routes')
   , http = require('http')
   , oscarsSentence = 'Oscar Said:, Be,yourself,everyone,else,is,taken,!!!'.split(',')
   , oscarSaid = function() { return H2( oscarsSentence.shift() || 'Oscar is done!' ); }
-  ;
+  , showRoute = function ( route ) { 
+    
+     return DIV( H2( route ),  P( (route === "123" ? 'A' : 'B') ) );
+    };
   
 http.createServer(function( req, res ) {
- console.log( req.url  )
+ 
   if ( req.url  === '/favicon.ico') res.end('');
+  
+  console.log( '?', req.url )
   res.writeHead(200, {"Content-Type": "text/html"})
   res.end( 
     DOCUMENT(
       HTML({ lang: 'en' }
       ,
         HEAD(
+          META( { name:"google-site-verification", content: "7aT55AVfOUFHoresHs0hBMTEU7ZPrMNzrX04Duw-J4s" } )
+          ,
           TITLE( 'domo on routes' )
           ,
           STYLE( { type: 'text/css' }
@@ -43,6 +50,15 @@ http.createServer(function( req, res ) {
           )//HEAD
         ,
         BODY(
+          A( { href: '/123' }, 'numberA' )
+          ,
+          ' | '
+          ,
+          A( { href: '/321' }, 'numberB' )
+          ,
+          ' | '
+          ,
+          
           A( { href: '/yellow' }, 'Yellow' )
           ,
           ' | '
@@ -53,8 +69,17 @@ http.createServer(function( req, res ) {
           ,
           A({ href: '/pink' }, 'Pink' )
           ,
+          
           ROUTE( req.url
           ,
+
+            /[0-9]{3}/g
+            ,
+              'number: '
+              , 
+              showRoute 
+              ,
+
             /yellow/
             , 
               oscarSaid

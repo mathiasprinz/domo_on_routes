@@ -3,149 +3,200 @@
 // is distributed under the MIT license.
 
   ! function () {
-  
+
     typeof module == "object"
-         ? module.exports = Route 
-         : window.ROUTE = Route 
+         ? module.exports = Route
+         : window.ROUTE = Route
          ; 
-  
-    function Route () {
-  
-      var concat = Array.prototype.concat
-        , childNodes = concat.apply( [], arguments )
-        , attributes = childNodes.shift()
-        , nodeType = attributes.nodeType || domo.SECTION
-        , routeDom 
-        , lookup 
-        ;
+
+      function Route () {
+        
+        var childNodes = copy( arguments )
+          , attributes = childNodes.shift()
+          , nodeType = attributes.nodeType || domo.SECTION
+          , match = null
+          , DOMstate 
+          , lookup 
+          ;
+          
+      // helps to make a copy
+      // concat = Array.prototype.concat
+      // concat.apply( [], element.childNodes ) made problems with adroid native browser
+      function copy ( arr ) {
+        
+        var first = []
+          , l = arr.length
+          , i = 0
+          ;
       
+        for ( ; i < l; i++ ) { first[ i ] = arr[ i ]; }
+        
+        return first;
       
+      }
+      
+      // url can be set in attributes obj as { url: string } or instead of the attributes obj. 
+      function getUrl () {
+        
+        var url = typeof attributes === 'string' ? attributes : attributes.url;
+        return ( url.apply ? url() : url );
+      
+      } 
+      
+      // take a look on a string ( url ) if a regular expression is part of it 
       function matches ( regEx ) { 
       
-        var url = typeof attributes === 'string' ? attributes : attributes.url;
-        return ( url.apply ? url() : url ).search( regEx ) > -1;
+        match = getUrl().match( regEx );
+        
+        // norm match output
+        if ( match ) match = match[ 0 ];
+        
+        return typeof match === 'string';
       
       }
       
+      // insert state as object to the lookup table 
+      function manageLookup ( route, children, actions ) {
         
-      function routeObj ( route, children, actions ) {
+        var nameSpace = route.join( '-' );
         
-       
         if ( ! lookup ) lookup = {};
-        if ( lookup.current ) lookup.last = lookup.current;
+        if ( lookup.current ) lookup.previous = lookup.current;
         
-        if ( lookup && lookup[ route ] ) { 
-          triggerActionAgain(  lookup[ route ] )
-          lookup.current = lookup[ route ]; 
+        // state is already in in the lookup table 
+        if ( lookup && lookup[ nameSpace ] ) { 
+          
+          triggerActionAgain( lookup[ nameSpace ] );
+          lookup.current = lookup[ nameSpace ]; 
+        
         }
         
+        // new state
         else {
+        
           bindActions( actions, children );
-          lookup.current = lookup[ route ] = { route: route, frag: domo.FRAGMENT.apply( domo, children ), actions: actions };
+          lookup.current = lookup[ nameSpace ] = { route: route, frag: domo.FRAGMENT.apply( domo, children ), actions: actions };
+        
         }
       }
-      
       
       function bindActions ( actions, children ) {
+      
         if ( ! actions.length ) return; 
+      
         for ( var i in  actions ) {
-          var actionFrag = domo.FRAGMENT.call( domo,  actions[ i ].func )
+          var actionFrag = domo.FRAGMENT.call( domo,  actions[ i ].func( match ) )
           children[ actions[ i ].index ] = actionFrag
-          actions[ i ].index = concat.apply( [], actionFrag.childNodes )
+          actions[ i ].index = copy(actionFrag.childNodes) 
         }
+      
       }
       
       function triggerActionAgain ( obj ) {
-          
-          if ( ! obj.actions.length || ! obj.frag.childNodes.length ) return;
-          
-          var actions = obj.actions;
-          var orginFrag = obj.frag
-          
-          
-          for ( var i in actions ) { 
-            
-            var actionFrag = domo.FRAGMENT.call( domo,  actions[ i ].func );
-            var index = actions[ i ].index 
-            
-            for ( var x in index ) {
-              
-              var aa =  index[ x ]
-              index[ x ] = actionFrag.childNodes[ x ]
-              orginFrag.replaceChild( actionFrag.childNodes[ x ] , aa )
-            
-            }
-           
-          }
-      }
-       
-      function domSwitch () {
         
-        var previousChildren = concat.apply( [], routeDom.childNodes );
-        var previous = lookup.last;
+        if ( ! obj.actions.length || ! obj.frag.childNodes.length ) return;
+          
+        var actions = obj.actions;
+        var i = 0;
+        var l = actions.length;
+       
+        for ( ; i < l; i++ ) { refreshAction(  actions[ i ], obj.frag ); }
+      
+      }
+      
+      function refreshAction ( actions, orginFrag ) {
+        
+        var actionFrag = domo.FRAGMENT.call( domo,  actions.func( match ) );
+        var index = actions.index;
+        var i = 0;
+        var l = index.length;
+        var refresh = function ( i ) {
+          var child =  index[ i ];
+          index[ i ] = actionFrag.childNodes[ i ];
+          orginFrag.replaceChild( actionFrag.childNodes[ i ], child );
+        }
+        
+        for ( ; i < l; i++ ) { refresh( i ); }  
+
+      }      
+       
+      function switchInDom () {
+        
+        var previousChildren = copy( DOMstate.childNodes ) ;
+        var previous = lookup.previous;
         var following = lookup.current; 
         
         if ( following.frag.childNodes.length && following.route ) {
-        
-          add( routeDom, following.frag );
+          
+          add( DOMstate, following.frag );
           add( previous.frag, previousChildren );
         
         }
-        
-        if ( ! following.route ) add( previous.frag, previousChildren );
-        return routeDom;
-          
+      
+        if ( ! following.route[ 0 ] ) {
+          add( previous.frag, previousChildren );
+        }
+      
+        return DOMstate;
       
       }
       
       function add ( dom, frag ) { 
-        
         dom.appendChild( frag instanceof Array ? domo.FRAGMENT.apply( domo, frag ) : frag ); 
-      
       }
       
-      
-      function change () { 
-        return ( ! routeDom ? routeDom = nodeType.apply( null, lookup.current.frag.childNodes ) : domSwitch() ); 
+      function changeState () { 
+        return ( ! DOMstate ? DOMstate = nodeType.apply( null, copy( lookup.current.frag.childNodes ) ) : switchInDom() ); 
       }
 
-            
-      function newRoute ( childs, matched ) {
+      // loops trough arguments passed to ROUTE()        
+      function findState ( childs, state ) {
          
          var child = childs.shift();
          var isRegEx = ! child ? true : child instanceof RegExp;
          
-         /* fill route object with domo childs*/
-        
-         
-         if ( matched && isRegEx ) {
+         // if state has collected all childNodes create an entry in the lookup to cache the result
+         // and change the current state
+         if ( state && isRegEx ) {
             
-            routeObj.apply( null,  matched ? [ matched.route, matched.childNodes, matched.actions ] : [] ); 
-            return change();
+            manageLookup.apply( null, state ? [ state.route, copy( state.childNodes ), state.actions ] : [] ); 
+            return changeState();
             
          }
          
-         if ( matched && ! isRegEx && child.apply ) {
-           matched.actions.push( { func: child, index: matched.childNodes.length  } )
+         // if argument is an function remember it's position and code   
+         if ( state && ! isRegEx && child.apply ) {
+         
+           state.actions.push( { func: child, index: state.childNodes.length } );
+         
          }
          
-         if ( matched && ! isRegEx ) matched.childNodes.push( child );
+         // every argument that follows the namespace is part of the matched state.      
+         if ( state && ! isRegEx ) state.childNodes.push( child );
          
-         if ( isRegEx && matches( child ) && ! matched ) matched = { route: child, childNodes: [], actions: [] };
+         // every reqular expression in the arguments is a state namespace
+         // if namespace could be found in url state will be defined to collect the following arguments until a new reqular expression follows
+         if ( isRegEx && matches( child ) && ! state ) {
          
-         return arguments.callee( childs, matched );
+           state = { route: [ child, match ], childNodes: [], actions: [] };
+         
+         }
+         
+         return arguments.callee( childs, state );
       
       }//routeing
       
       
-      
-      // callback
+      // trigger callback
       if ( attributes.routing ) { 
-         attributes.routing( function () { return newRoute.call( null, childNodes.slice()); } ); 
+         
+         attributes.routing( function () { return findState.call( null, childNodes.slice() ); } ); 
+      
       }
       
-      return newRoute.call( null, childNodes.slice() );
       
-
-   }
-}()
+      return findState.call( null, childNodes.slice() );
+      
+    }
+  
+  }()
