@@ -82,7 +82,7 @@
         ,
         A({ href: '#!/pink' }, 'Pink' )
         ,
-        ROUTE( { url: hash, routing: hashChange }
+        ROUTE( { url: hash, change: hashChange }
         ,
           /[0-9]{3}/
           ,
@@ -114,7 +114,7 @@
             ,
             A({ href: '#!/blue/dark' }, 'Dark Blue' )
             ,
-            ROUTE( { url: hash, routing: hashChange }
+            ROUTE( { url: hash, change: hashChange }
             ,
               /(.*(blue).*){2}/
               ,
