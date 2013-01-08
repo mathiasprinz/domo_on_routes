@@ -1,4 +1,4 @@
-// domoOnRoutes.js 0.1.0
+// domoOnRoutes.js 0.1.1
 // (c) 2012  M.( Mathias Prinz )
 // is distributed under the MIT license.
 
@@ -21,6 +21,7 @@
         var child = childs.shift();
         var isRegEx = child instanceof RegExp;
         var match = matches( child );
+        
         // if state can't be found
 
         if ( ! child && ! state ) {
@@ -77,7 +78,7 @@
       function manageLookup ( route, children, actions ) {
         var name = route.join( '-' );
         var match = route[ 1 ];
-        
+
         children = copy( children );
 
         if ( ! lookup ) lookup = {};
@@ -85,18 +86,18 @@
         if ( lookup && lookup[ name ] ) { 
 
           refreshActions( lookup[ name ], match );
-
+          
           lookup.current = lookup[ name ]; 
         }
         else {
 
           initActions( actions, children, match );
 
-          lookup.current = lookup[ name ] = { 
-            frag: domo.FRAGMENT.apply( null, children )
-          , actions: actions 
-          , route: route
-          };
+          lookup.current = lookup[ name ] = {
+                frag: domo.FRAGMENT.apply( null, children )
+              , actions: actions 
+              , route: route
+            };
         }
       }
 
@@ -203,15 +204,96 @@
         var following = lookup.current;
 
         if ( following.frag.childNodes.length && following.route ) {
-          add( lookup.DOMFrame, following.frag );
-          add( previous.frag, previousChildren );
+
+          dramaturgy(  
+            copy( following.frag.childNodes )
+          , previousChildren
+          , function () {
+
+              // move current childNodes from
+              // dom to related dom fragment
+              // into lookup ( "Remove" previous state )
+
+              add( previous.frag, previousChildren );
+
+              // move childNodes form the following state
+              // out of lookup into dom ( "Create" next state )
+
+              add( lookup.DOMFrame, following.frag );
+
+            }
+          )
         }
 
+        // none state is aktive in the dom
+
         if ( ! following.route[ 0 ] ) {
-          add( previous.frag, previousChildren );
+          
+          dramaturgy( [], previousChildren, function () {
+
+            // move current childNodes from
+            // dom to related dom fragment
+            // into lookup ( "Remove" previous state )
+            
+            add( previous.frag, previousChildren ); 
+
+          })
         }
 
         return lookup.DOMFrame;
+      }
+
+      // filter nodes by a special nodeType
+
+      function filterNodes ( n, type ) {
+        var filter = [];
+        var i = 0;
+        var l = n.length;
+
+        for ( ; i < l; i++ ) {
+          if ( n[ i ].nodeType == type ) {
+            filter.push( n[ i ] );
+          }
+        }
+        return filter;
+      }
+
+      // if childNodes need to be prepared before a drama
+      // can be startes, the dramaturgy callback will be triggered
+      // before, marked as initialisation ( 'init ') call by the
+      // first argument
+
+      function initDramaturgy ( children, moveOn ) {
+        var drama = attributes.dramaturgy;
+        if ( ! drama || !lookup.current ) { moveOn(); }
+        else { drama( 'init', children, moveOn ); }
+      }
+
+      // if a dramaturgy is defined in attributes it will be triggerd 
+      // before the previous ( old ) state will be removed, after that 
+      // if a state will follow it is triggerd again
+
+      function dramaturgy ( following, previous, moveOn ) {
+
+        if ( ! attributes.dramaturgy ) { moveOn(); return; }
+
+        following = filterNodes( following, 1 );
+        previous = filterNodes( previous, 1 );
+
+        var drama = attributes.dramaturgy;
+        var dramaPrevious = function () { drama( false, previous, ( following.length ? dramaFollow : moveOn ) ); }
+        var dramaFollow = function () {
+          moveOn();
+          initDramaturgy(
+            following
+          , function () {
+              drama( true, following, function () {} );
+            }
+          )
+        }
+
+        if ( ! previous.length ) dramaFollow();
+        else dramaPrevious();
       }
 
       // add child
@@ -219,9 +301,9 @@
       function add ( dom, frag ) { 
         dom.appendChild( frag instanceof Array ? domo.FRAGMENT.apply( domo, frag ) : frag );
       }
-      
+
       // trigger callback
-      
+
       if ( attributes.change ) {
         attributes.change( function () { return findState.call( null, args.slice() ); } );
       }

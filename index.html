@@ -7,7 +7,7 @@
     oscarsSentence = 'Oscar Said:,Be,yourself,everyone,else,is,taken,!!!'.split(',')
     oscarSaid = function() { return H2( oscarsSentence.shift() || 'Oscar is done!' ); }
     
-    hash = function () { return location.hash }
+    hash = function () { return location.hash.replace( '#!/', '' ); }
     
     showRoute = function ( route ) { 
       
@@ -16,9 +16,21 @@
     
     hashChange = function ( routeing ) { 
       $( window ).on('hashchange',function(){ 
-       routeing()
+        console.log( routeing() )
       })
       //window.addEventListener('hashchange',function(){ routeing() }, false )
+    }
+    
+    fade = function ( toggle, nodes, moveOn ) {    
+      
+      if ( toggle === 'init' ) {
+        $( nodes ).css( 'opacity', 0 );
+        moveOn();
+        return;
+      }
+      
+      $( nodes ).stop().animate({'opacity': toggle ? 1 : 0 }, moveOn );
+      
     }
     
     /* if hashChange event is missing
@@ -82,9 +94,9 @@
         ,
         A({ href: '#!/pink' }, 'Pink' )
         ,
-        ROUTE( { url: hash, change: hashChange }
+        ROUTE( { url: hash, change: hashChange, dramaturgy: fade  }
         ,
-          /[0-9]{3}/
+          /^[0-9]{3}$/
           ,
             'number: '
             ,
@@ -114,7 +126,7 @@
             ,
             A({ href: '#!/blue/dark' }, 'Dark Blue' )
             ,
-            ROUTE( { url: hash, change: hashChange }
+            ROUTE( { url: hash, change: hashChange, dramaturgy: fade }
             ,
               /(.*(blue).*){2}/
               ,
@@ -130,10 +142,15 @@
             )
             ,
           /pink/
-            ,
+          ,
             oscarSaid
             ,
             H1( 'Pink' )
+          ,
+          /([a-z,A-Z,0-9]*.)/
+          ,
+          H1( '404 - State doesn\'t exist' )
+            
         )//ROUTE
       )//BODY 
     )//HTML

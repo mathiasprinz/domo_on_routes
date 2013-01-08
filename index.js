@@ -114,6 +114,11 @@ http.createServer(function( req, res ) {
               oscarSaid
               ,
               H1( 'Pink' )
+             , 
+            /([a-z,A-Z,0-9]*.)/
+              ,
+              H1( '404 - State doesn\'t exist' )
+
           )//ROUTE
         )//BODY 
       )//HTML
