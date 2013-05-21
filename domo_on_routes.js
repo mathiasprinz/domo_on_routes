@@ -1,5 +1,5 @@
 // domoOnRoutes.js 0.1.1
-// (c) 2012  M.( Mathias Prinz )
+// (c) 2013  M.( Mathias Prinz )
 // is distributed under the MIT license.
 
   ! function () {
@@ -10,10 +10,11 @@
          ; 
 
     function Route () {
-
+      
       var args = copy( arguments )
         , attributes = args.shift()
         , lookup
+        , domo = domo || carton
         ;
 
       function findState ( childs, state, followers, actions ) {

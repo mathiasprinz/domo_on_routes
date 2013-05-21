@@ -14,7 +14,7 @@ http.createServer(function( req, res ) {
   if ( req.url  === '/favicon.ico') res.end('');
   
   console.log( '?', req.url )
-  res.writeHead(200, {"Content-Type": "text/html"})
+  res.writeHead( 200, { "Content-Type": "text/html" })
   res.end( 
     DOCUMENT(
       HTML({ lang: 'en' }
